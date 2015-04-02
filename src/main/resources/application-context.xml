@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-4.0.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit.xsd">
+
+       <context:component-scan base-package="com.busap.springamqp" />
+
+       <context:annotation-config/>
+
+       <!-- Connection factory for connection establishment -->
+       <rabbit:connection-factory id="connectionFactory" host="192.168.108.166" port="5672" username="mqtt_cctv"
+               password="cn.10020.cctv"/>
+
+       <!-- Create an exchange -->
+       <rabbit:direct-exchange name="directExchange" id="directExchange"/>
+
+       <rabbit:fanout-exchange name="fanoutExchange" id="fanoutExchange" />
+
+       <rabbit:topic-exchange name="topicExchange" id="topicExchange" />
+       <!-- Template for sending messages -->
+       <rabbit:template id="amqpTemplate" connection-factory="connectionFactory" exchange="topicExchange"/>
+
+       <!-- Admin object for creation of queues -->
+       <rabbit:admin connection-factory="connectionFactory" id="amqpAdmin" />
+
+       <!-- Listener container for setting up concurrent listeners for queues -->
+       <bean id="simpleMessageListenerContainer" class="org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer">
+              <constructor-arg index="0" ref="connectionFactory"/>
+              <property name="missingQueuesFatal" value="false"/>
+              <property name="concurrentConsumers" value="5"/>
+              <property name="autoStartup" value="false"/>
+              <property name="messageListener" ref="messageQueueManager"/>
+       </bean>
+
+</beans>
